@@ -229,10 +229,12 @@ alias agentpack="node $(pwd)/packages/cli/dist/index.js"`}
   --target claude-code --profile safe \\
   --project ./my-project --yes`}
               />
-              <Terminal label="verify" code={'agentpack verify you.my-pack --sig --chain'} />
+              <Terminal label="verify" code={'agentpack verify you.my-pack --chain'} />
             </div>
             <p class="mt-3 font-mono text-xs text-dim">
-              <code>verify</code> checks the Sigstore signature and the hash-chained install history.
+              <code>--chain</code> validates the hash-chained install history — works on any
+              install today. Add <code>--sig</code> to enforce Sigstore signatures once a pack
+              is published to the registry.
             </p>
           </div>
         </div>
@@ -266,6 +268,7 @@ alias agentpack="node $(pwd)/packages/cli/dist/index.js"`}
               publisher-managed keys. <code class="font-mono text-xs text-accent">verify --sig</code>
               enforces signing by default; <code class="font-mono text-xs text-accent">--expected-signer</code>
               pins the identity you trust.
+              <span class="text-dim">Publishing &amp; signing land with the hosted registry (not yet live); git-source install and <code class="font-mono text-xs">--chain</code> verification work today.</span>
             </p>
           </div>
           <div class="surface rounded-2xl p-7">
