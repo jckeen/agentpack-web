@@ -1,0 +1,63 @@
+---
+// A terminal-styled code block with a copy button.
+// `code` is the literal text copied to the clipboard (and shown).
+// `label` is the window chrome caption. Set `prompt` false for plain output.
+interface Props {
+  code: string;
+  label?: string;
+  prompt?: boolean;
+}
+const { code, label = 'bash', prompt = true } = Astro.props;
+---
+
+<div class="term surface overflow-hidden rounded-xl text-left" data-prompt={prompt ? 'true' : 'false'}>
+  <div class="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--panel-2)] px-4 py-2.5">
+    <span class="flex gap-1.5" aria-hidden="true">
+      <span class="h-3 w-3 rounded-full bg-[#ff5f56]/70"></span>
+      <span class="h-3 w-3 rounded-full bg-[#ffbd2e]/70"></span>
+      <span class="h-3 w-3 rounded-full bg-[#27c93f]/70"></span>
+    </span>
+    <span class="ml-1 font-mono text-xs text-dim">{label}</span>
+    <button
+      class="copy-btn ml-auto rounded-md border border-[var(--border)] px-2.5 py-1 font-mono text-xs text-soft transition-colors hover:text-accent hover:border-[var(--accent)]"
+      type="button"
+      aria-label="Copy command to clipboard"
+    >
+      Copy
+    </button>
+  </div>
+  <pre class="overflow-x-auto px-4 py-4 font-mono text-[13px] leading-relaxed sm:text-sm"><code>{code}</code></pre>
+</div>
+
+<style>
+  /* Render a dimmed `$` prompt before the first line when prompt=true. */
+  .term[data-prompt='true'] pre code::before {
+    content: '$ ';
+    color: var(--accent);
+    user-select: none;
+  }
+  .term pre {
+    background: var(--code-bg);
+    color: #e6edf3;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.closest('.term')?.querySelector('code')?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(code.trim());
+        const original = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('text-accent');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('text-accent');
+        }, 1600);
+      } catch {
+        /* clipboard blocked — leave the visible text for manual copy */
+      }
+    });
+  });
+</script>

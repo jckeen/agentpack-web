@@ -1,0 +1,383 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Terminal from '../components/Terminal.astro';
+
+const repo = 'https://github.com/jckeen/agent-pack';
+const docs = `${repo}/tree/master/docs`;
+
+const problems = [
+  {
+    icon: '⌫',
+    title: 'Ungoverned copy-paste',
+    body: 'Agent configs spread by pasting CLAUDE.md snippets and MCP blocks between projects. No versions, no review, no idea what a config actually lets an agent do.',
+  },
+  {
+    icon: '⤫',
+    title: 'No cross-surface reach',
+    body: 'A setup tuned for the terminal doesn’t follow you to Cowork, Codex, or claude.ai. You rebuild it by hand for every surface — and the pieces drift.',
+  },
+  {
+    icon: '?',
+    title: 'No provenance or trust',
+    body: 'Where did this config come from? Was it tampered with? What does it install? Today there’s no signature, no lockfile, no answer.',
+  },
+];
+
+const steps = [
+  {
+    n: '01',
+    cmd: 'pack',
+    title: 'Pack',
+    body: 'Describe your setup once in a single AGENTPACK.yaml — skills, rules, hooks, slash commands, subagents, MCP servers. The smallest unit is an atom; a pack is a governed bundle of them.',
+  },
+  {
+    n: '02',
+    cmd: 'compile',
+    title: 'Compile',
+    body: 'AgentPack compiles that pack to each surface’s native format: .claude/ + .mcp.json for Claude Code, a plugin for Cowork, a chat bundle for claude.ai, .codex/ + AGENTS.md for Codex.',
+  },
+  {
+    n: '03',
+    cmd: 'install',
+    title: 'Install',
+    body: 'Install with a lockfile and a hash-chained history. Risk, permissions, and the exact file plan are shown before anything writes to disk — then it lands atomically, with rollback.',
+  },
+];
+
+const surfaces = ['Claude Code', 'Cowork', 'Claude Desktop', 'claude.ai (Chat)', 'Codex', 'Cursor', 'ChatGPT Apps', 'AGENTS.md'];
+
+// Honest per-atom × surface portability — sourced from agent-pack
+// docs/integration-roadmap.md. "—" rows note the ceiling, not a TODO.
+const portRows = [
+  { atom: 'skill', code: 'Full', cowork: 'Full (plugin)', chat: 'Full — universal', codex: 'Full' },
+  { atom: 'mcp_server (remote)', code: 'Full', cowork: 'Full', chat: 'Full — connector', codex: 'Full' },
+  { atom: 'command', code: 'Full', cowork: 'Plugin', chat: 'Re-express as skill', codex: 'Full' },
+  { atom: 'subagent', code: 'Full', cowork: 'Plugin', chat: 'Not portable', codex: 'Full' },
+  { atom: 'hook', code: 'Full', cowork: 'Plugin', chat: 'Not portable', codex: 'Full' },
+  { atom: 'instruction / rule', code: 'Full (CLAUDE.md)', cowork: 'On-invoke skill', chat: 'Project instructions', codex: 'AGENTS.md' },
+];
+
+const reachClass = (v: string) =>
+  v.startsWith('Full')
+    ? 'text-[var(--term-green)]'
+    : v === 'Not portable'
+      ? 'text-dim'
+      : 'text-[var(--term-amber)]';
+---
+
+<BaseLayout>
+  <Nav />
+  <main id="main">
+    <!-- ===================== HERO ===================== -->
+    <section class="relative overflow-hidden border-b border-[var(--border)]">
+      <div class="bg-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="mx-auto max-w-6xl px-5 pb-20 pt-20 sm:pt-28">
+        <a
+          href={`${repo}/blob/master/README.md`}
+          class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1 font-mono text-xs text-soft transition-colors hover:border-[var(--accent)] hover:text-accent"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-[var(--term-green)]"></span>
+          Open source · MIT · git-native
+        </a>
+        <h1 class="mt-6 max-w-4xl text-balance text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
+          Package your agent setup once.
+          <span class="text-accent">Install it anywhere.</span>
+        </h1>
+        <p class="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-soft">
+          AgentPack is the compiler and governance layer for agent configuration.
+          Bundle your instructions, skills, MCP servers, hooks and subagents into
+          one pack — then install it with a lockfile, govern what agents can do,
+          and carry it to every Claude surface. No account. No SaaS. Works from a
+          fresh clone.
+        </p>
+
+        <div class="mt-8 max-w-2xl">
+          <Terminal code={'agentpack install github:owner/repo@ref#subpath'} label="install" />
+          <p class="mt-2 font-mono text-xs text-dim">
+            One command. Git is the default distribution — no registry required.
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            href="#quickstart"
+            class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[#04201c] transition-transform hover:-translate-y-0.5"
+          >
+            Get started →
+          </a>
+          <a
+            href={repo}
+            class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-5 py-3 text-sm font-semibold text-soft transition-colors hover:border-[var(--accent)] hover:text-accent"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+            Star on GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROBLEM ===================== -->
+    <section class="border-b border-[var(--border)]">
+      <div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-mono text-xs uppercase tracking-widest text-accent">The problem</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          Agent configs are copy-pasted, ungoverned, and stuck on one platform.
+        </h2>
+        <div class="mt-12 grid gap-5 md:grid-cols-3">
+          {problems.map((p) => (
+            <div class="surface rounded-2xl p-6">
+              <div class="grid h-10 w-10 place-items-center rounded-lg border border-[var(--border)] font-mono text-lg text-accent" aria-hidden="true">{p.icon}</div>
+              <h3 class="mt-4 text-lg font-semibold">{p.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-soft">{p.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW IT WORKS ===================== -->
+    <section id="how" class="border-b border-[var(--border)]">
+      <div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-mono text-xs uppercase tracking-widest text-accent">How it works</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          Pack → compile → install.
+        </h2>
+        <p class="mt-4 max-w-2xl text-soft">
+          One source of truth, compiled to every surface’s native format.
+        </p>
+
+        <div class="mt-12 grid gap-5 md:grid-cols-3">
+          {steps.map((s) => (
+            <div class="surface relative rounded-2xl p-6">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-sm text-dim">{s.n}</span>
+                <code class="rounded-md bg-[var(--code-bg)] px-2 py-1 font-mono text-xs text-accent">agentpack {s.cmd}</code>
+              </div>
+              <h3 class="mt-4 text-lg font-semibold">{s.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-soft">{s.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="mt-10 surface rounded-2xl p-6">
+          <p class="text-sm text-soft">Compiles to the surfaces your team already uses:</p>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {surfaces.map((s) => (
+              <li class="rounded-lg border border-[var(--border)] bg-[var(--code-bg)] px-3 py-1.5 font-mono text-xs text-soft">{s}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== QUICKSTART ===================== -->
+    <section id="quickstart" class="border-b border-[var(--border)]">
+      <div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-mono text-xs uppercase tracking-widest text-accent">Quickstart</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          Up and running in under a minute.
+        </h2>
+        <p class="mt-4 max-w-2xl text-soft">
+          AgentPack isn’t on npm yet — that’s planned for the v0.3.0 promotion.
+          Today you build the CLI from source. The same commands will work via
+          <code class="rounded bg-[var(--code-bg)] px-1.5 py-0.5 font-mono text-xs text-accent">npx agentpack</code>
+          or a global install once it ships.
+        </p>
+
+        <div class="mt-10 grid gap-8 lg:grid-cols-2">
+          <div>
+            <h3 class="font-mono text-sm text-soft"><span class="text-accent">1.</span> Build the CLI from source</h3>
+            <div class="mt-3">
+              <Terminal
+                label="bash"
+                code={`git clone https://github.com/jckeen/agent-pack
+cd agent-pack
+pnpm install
+pnpm build
+alias agentpack="node $(pwd)/packages/cli/dist/index.js"`}
+              />
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-mono text-sm text-soft"><span class="text-accent">2.</span> Compile an existing CLAUDE.md into a pack</h3>
+            <div class="mt-3">
+              <Terminal label="import" code={'agentpack import ./CLAUDE.md --id you.my-pack --from claude'} />
+            </div>
+            <p class="mt-3 font-mono text-xs text-dim">
+              <code>import</code> reads a CLAUDE.md / AGENTS.md and emits a structured pack.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-mono text-sm text-soft"><span class="text-accent">3.</span> Export it to a target surface</h3>
+            <div class="mt-3">
+              <Terminal label="pack" code={'agentpack pack export . --target claude-code --profile safe'} />
+            </div>
+            <p class="mt-3 font-mono text-xs text-dim">
+              Profiles gate capability: <code>safe → standard → full → enterprise</code>.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-mono text-sm text-soft"><span class="text-accent">4.</span> Install from git, then verify</h3>
+            <div class="mt-3 space-y-3">
+              <Terminal
+                label="install"
+                code={`agentpack install github:jckeen/agent-pack@master#examples/pr-quality \\
+  --target claude-code --profile safe \\
+  --project ./my-project --yes`}
+              />
+              <Terminal label="verify" code={'agentpack verify you.my-pack --sig --chain'} />
+            </div>
+            <p class="mt-3 font-mono text-xs text-dim">
+              <code>verify</code> checks the Sigstore signature and the hash-chained install history.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-10">
+          <a href={docs} class="inline-flex items-center gap-2 font-mono text-sm text-accent hover:underline">
+            Read the full CLI reference →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== GOVERNANCE ===================== -->
+    <section id="governance" class="border-b border-[var(--border)] bg-[var(--bg-soft)]">
+      <div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-mono text-xs uppercase tracking-widest text-accent">Governance — why teams choose it</p>
+        <h2 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          A compiler gets you cross-platform. Governance is the moat.
+        </h2>
+        <p class="mt-4 max-w-2xl text-soft">
+          The durable value isn’t the adapters — it’s the signed, versioned,
+          policy-governed layer over them.
+        </p>
+
+        <div class="mt-12 grid gap-5 md:grid-cols-2">
+          <div class="surface rounded-2xl p-7">
+            <h3 class="flex items-center gap-2 text-lg font-semibold"><span class="text-accent" aria-hidden="true">⛨</span> Signing &amp; verification</h3>
+            <p class="mt-3 text-sm leading-relaxed text-soft">
+              Published packs are signed with <strong class="text-[var(--text)]">Sigstore cosign keyless</strong>
+              — OIDC identity → Fulcio cert → Rekor transparency log. No
+              publisher-managed keys. <code class="font-mono text-xs text-accent">verify --sig</code>
+              enforces signing by default; <code class="font-mono text-xs text-accent">--expected-signer</code>
+              pins the identity you trust.
+            </p>
+          </div>
+          <div class="surface rounded-2xl p-7">
+            <h3 class="flex items-center gap-2 text-lg font-semibold"><span class="text-accent" aria-hidden="true">⚑</span> Risk &amp; permission consent at install</h3>
+            <p class="mt-3 text-sm leading-relaxed text-soft">
+              Permissions, risk level
+              (<code class="font-mono text-xs">low/medium/high/critical</code>), and the
+              exact file plan are shown <em>before</em> anything writes to disk.
+              A <code class="font-mono text-xs">critical</code> plan won’t install without
+              an explicit <code class="font-mono text-xs text-accent">--allow-critical</code>.
+            </p>
+          </div>
+          <div class="surface rounded-2xl p-7">
+            <h3 class="flex items-center gap-2 text-lg font-semibold"><span class="text-accent" aria-hidden="true">🔒</span> Policy controls</h3>
+            <p class="mt-3 text-sm leading-relaxed text-soft">
+              A project-level <code class="font-mono text-xs">agentpack.policy.json</code> sets the
+              rules every install must obey — require signatures, restrict
+              profiles, allow only specific signers or publishers, deny atom types.
+              Violations fail closed.
+            </p>
+          </div>
+          <div class="surface rounded-2xl p-7">
+            <h3 class="flex items-center gap-2 text-lg font-semibold"><span class="text-accent" aria-hidden="true">▤</span> Optional registry for org distribution</h3>
+            <p class="mt-3 text-sm leading-relaxed text-soft">
+              Git is the default — you never <em>need</em> a server. An optional
+              hosted registry adds cross-org discovery, schema-validated metadata,
+              and admin-side quarantine of compromised versions.
+              <span class="text-dim">(Hosted registry is not yet live; git-source install works today.)</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PORTABILITY ===================== -->
+    <section id="portability" class="border-b border-[var(--border)]">
+      <div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-mono text-xs uppercase tracking-widest text-accent">Portability — with honest ceilings</p>
+        <h2 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          Most things cross cleanly. We tell you what doesn’t.
+        </h2>
+        <p class="mt-4 max-w-3xl text-soft">
+          Skills and remote MCP servers are the universal crossers — they reach
+          every Claude surface. Ambient instructions and rules have no globally-
+          ambient home off the terminal, so they downgrade to on-invoke skills.
+          A pack’s overall reach is bounded by its least-portable atom.
+        </p>
+
+        <div class="mt-10 surface overflow-hidden rounded-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+              <caption class="sr-only">Per-atom portability across agent surfaces</caption>
+              <thead>
+                <tr class="border-b border-[var(--border)] bg-[var(--panel-2)] font-mono text-xs uppercase tracking-wider text-dim">
+                  <th scope="col" class="px-5 py-3 font-medium">Atom</th>
+                  <th scope="col" class="px-5 py-3 font-medium">Claude Code</th>
+                  <th scope="col" class="px-5 py-3 font-medium">Cowork</th>
+                  <th scope="col" class="px-5 py-3 font-medium">Claude Chat</th>
+                  <th scope="col" class="px-5 py-3 font-medium">Codex</th>
+                </tr>
+              </thead>
+              <tbody class="font-mono text-[13px]">
+                {portRows.map((r) => (
+                  <tr class="border-b border-[var(--border-soft)] last:border-0">
+                    <th scope="row" class="px-5 py-3 font-medium text-[var(--text)]">{r.atom}</th>
+                    <td class={`px-5 py-3 ${reachClass(r.code)}`}>{r.code}</td>
+                    <td class={`px-5 py-3 ${reachClass(r.cowork)}`}>{r.cowork}</td>
+                    <td class={`px-5 py-3 ${reachClass(r.chat)}`}>{r.chat}</td>
+                    <td class={`px-5 py-3 ${reachClass(r.codex)}`}>{r.codex}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="mt-4 font-mono text-xs text-dim">
+          Source:
+          <a href={`${docs}/integration-roadmap.md`} class="text-accent underline underline-offset-2">docs/integration-roadmap.md</a>.
+          AgentPack reports each atom’s ceiling at compile time — no surprises after install.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== CTA ===================== -->
+    <section class="border-b border-[var(--border)]">
+      <div class="mx-auto max-w-6xl px-5 py-20 text-center">
+        <h2 class="mx-auto max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          Write your agent setup once. Govern it. Ship it everywhere.
+        </h2>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a href="#quickstart" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[#04201c] transition-transform hover:-translate-y-0.5">Get started →</a>
+          <a href={repo} class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-5 py-3 text-sm font-semibold text-soft transition-colors hover:border-[var(--accent)] hover:text-accent">View on GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="bg-[var(--bg)]">
+      <div class="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2.5 font-mono text-sm font-semibold">
+          <span class="grid h-7 w-7 place-items-center rounded-md border border-[var(--accent)] text-accent" aria-hidden="true">▣</span>
+          AgentPack
+        </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-soft" aria-label="Footer">
+          <a href={repo} class="transition-colors hover:text-accent">GitHub</a>
+          <a href={docs} class="transition-colors hover:text-accent">Docs</a>
+          <a href={`${repo}/blob/master/LICENSE`} class="transition-colors hover:text-accent">License</a>
+          <a href={`${repo}/blob/master/SECURITY.md`} class="transition-colors hover:text-accent">Security</a>
+          <a href={`${repo}/blob/master/CHANGELOG.md`} class="transition-colors hover:text-accent">Changelog</a>
+        </nav>
+        <p class="font-mono text-xs text-dim">© 2026 AgentPack contributors · MIT</p>
+      </div>
+    </footer>
+  </main>
+</BaseLayout>
