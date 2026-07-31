@@ -18,5 +18,7 @@
 
 ### Pending (operator)
 
-- Registrar DNS for `agentpack.to` (apex A/AAAA + `www` CNAME), then Enforce HTTPS.
-- Flip `jckeen/agent-pack` public so the hero command and GitHub links resolve.
+- ~~Registrar DNS for `agentpack.to` (apex A/AAAA + `www` CNAME), then Enforce HTTPS.~~
+  Done — `https://agentpack.to` serves HTTP 200 from GitHub Pages (verified 2026-07-30).
+- ~~Flip `jckeen/agent-pack` public so the hero command and GitHub links resolve.~~
+  Done — repo visibility is `public` (verified 2026-07-30).
