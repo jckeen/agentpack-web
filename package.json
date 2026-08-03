@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Explainer/marketing site for AgentPack \u2014 agentpack.to",
+  "description": "Explainer/marketing site for AgentPack — agentpack.to",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -19,7 +19,7 @@
     "@astrojs/check": "^0.9.10",
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.3"
   },
   "pnpm": {
     "overrides": {
@@ -27,7 +27,8 @@
       "svgo@>=4.0.0 <4.0.2": ">=4.0.2",
       "fast-uri@>=3.0.0 <3.1.4": ">=3.1.4",
       "yaml@>=2.0.0 <2.8.3": ">=2.8.3",
-      "postcss@<8.5.18": ">=8.5.18"
+      "postcss@<8.5.18": ">=8.5.18",
+      "sharp@<0.35.0": ">=0.35.0"
     }
   }
 }
