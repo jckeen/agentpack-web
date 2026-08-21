@@ -194,7 +194,7 @@ const reachClass = (v: string) =>
                 code={`git clone https://github.com/jckeen/agent-pack
 cd agent-pack
 pnpm install
-pnpm build
+pnpm --filter @agentpack/cli... build      # builds only the CLI + its deps (skips the registry app)
 alias agentpack="node $(pwd)/packages/cli/dist/index.js"`}
               />
             </div>
