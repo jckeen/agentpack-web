@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-01 — CI workflow
+
+- Added `.github/workflows/ci.yml`: on every pull request and push to `main`,
+  install from the frozen lockfile and run `pnpm build` (`astro check` +
+  `astro build`). Pull requests previously had no checks at all, which blocked
+  auto-merge of routine dependency PRs (#37).
+
 ## 2026-06-16 — Initial build
 
 - Scaffolded the AgentPack explainer site: Astro 6 + Tailwind v4, TypeScript,
