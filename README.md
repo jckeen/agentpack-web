@@ -25,6 +25,8 @@ pnpm preview      # serve the built ./dist locally
 ```
 
 The build is type-checked: `pnpm build` fails on any `astro check` error.
+`.github/workflows/ci.yml` runs the same install + build on every pull request and on pushes
+to `main`, so PRs (including automated dependency PRs) get a real check.
 
 ## Project layout
 
@@ -42,6 +44,7 @@ public/
   favicon.svg, og.svg          # icons / social card
   robots.txt
 .github/workflows/deploy.yml   # build + deploy to GitHub Pages
+.github/workflows/ci.yml       # PR + main check: install, astro check, build
 ```
 
 All product claims, commands, and the portability matrix are sourced verbatim from the
